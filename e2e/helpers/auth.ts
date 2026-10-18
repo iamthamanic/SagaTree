@@ -48,19 +48,19 @@ export function buildLocalAdminGoTrueSession() {
 /**
  * Fulfill password-grant so Local Admin gets a persisted auth-token.
  * Use on inert CI backends; do not combine with hang/abort GoTrue routes.
+ * Pattern is auth-only — never `**/*` + continue (that bypasses other page.route mocks).
  */
 export async function installLocalAdminGoTrueSuccess(page: Page): Promise<void> {
-  await page.route('**/*', async (route: Route) => {
-    const req = route.request();
-    if (req.method() === 'POST' && isGoTrueToken(req.url())) {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(buildLocalAdminGoTrueSession()),
-      });
+  await page.route('**/auth/v1/token**', async (route: Route) => {
+    if (route.request().method() !== 'POST') {
+      await route.fallback();
       return;
     }
-    await route.continue();
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(buildLocalAdminGoTrueSession()),
+    });
   });
 }
 
