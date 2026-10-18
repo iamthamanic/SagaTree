@@ -19,10 +19,6 @@ export const E2E_LOCAL_ADMIN_PASSWORD = '1234';
 export const E2E_LOCAL_ADMIN_EMAIL = 'admin@sagatree.local';
 export const E2E_LOCAL_ADMIN_USER_ID = '00000000-0000-4000-8000-000000000001';
 
-function isGoTrueToken(url: string): boolean {
-  return /\/auth\/v1\/token/.test(url);
-}
-
 /** Deterministic Local Admin GoTrue session (JWT path without live stack). */
 export function buildLocalAdminGoTrueSession() {
   const now = Math.floor(Date.now() / 1000);
@@ -48,7 +44,7 @@ export function buildLocalAdminGoTrueSession() {
 /**
  * Fulfill password-grant so Local Admin gets a persisted auth-token.
  * Use on inert CI backends; do not combine with hang/abort GoTrue routes.
- * Pattern is auth-only — never `**/*` + continue (that bypasses other page.route mocks).
+ * Auth-token URL only — a catch-all route plus continue would bypass REST mocks.
  */
 export async function installLocalAdminGoTrueSuccess(page: Page): Promise<void> {
   await page.route('**/auth/v1/token**', async (route: Route) => {
